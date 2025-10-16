@@ -32,6 +32,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.emisoraufps.screens.*
 import com.example.emisoraufps.ui.theme.EmisoraUFPSTheme
 
+
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -110,7 +112,12 @@ fun BottomNavigationBar(navController: NavController) {
         items.forEach { screen ->
             NavigationBarItem(
                 icon = { Icon(screen.icon, contentDescription = screen.title) },
-                label = { Text(screen.title) },
+                label = {
+                    Text(
+                        text = screen.title,
+                        style = MaterialTheme.typography.labelSmall // cambiar tamano texto
+                    )
+                },
                 selected = currentRoute == screen.route,
                 onClick = {
                     navController.navigate(screen.route) {
