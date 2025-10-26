@@ -10,7 +10,6 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Mic
-import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -31,7 +30,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.emisoraufps.screens.*
 import com.example.emisoraufps.ui.theme.EmisoraUFPSTheme
-
+import com.example.emisoraufps.screens.DetalleProgramaScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -85,13 +84,20 @@ fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifi
             InicioScreen()
         }
         composable(Screen.Programacion.route) {
-            ProgramacionScreen()
+            ProgramacionScreen(navController)
         }
         composable(Screen.Comunicadores.route) {
             ComunicadoresScreen()
         }
         composable(Screen.Perfil.route) {
             PerfilScreen()
+        }
+        composable(
+            "detalle/{nombre}/{horario}",
+        ) { backStackEntry ->
+            val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
+            val horario = backStackEntry.arguments?.getString("horario") ?: ""
+            DetalleProgramaScreen(navController, nombre, horario)
         }
     }
 }
