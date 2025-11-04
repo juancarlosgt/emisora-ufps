@@ -87,7 +87,7 @@ fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifi
             ProgramacionScreen(navController)
         }
         composable(Screen.Comunicadores.route) {
-            ComunicadoresScreen()
+            ComunicadoresScreen(navController)
         }
         composable(Screen.Perfil.route) {
             PerfilScreen()
@@ -98,6 +98,12 @@ fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifi
             val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
             val horario = backStackEntry.arguments?.getString("horario") ?: ""
             DetalleProgramaScreen(navController, nombre, horario)
+        }
+        composable(
+            "comunicador/{nombre}",
+        ) { backStackEntry ->
+            val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
+            DetalleComunicadorScreen(navController, nombre)
         }
     }
 }
