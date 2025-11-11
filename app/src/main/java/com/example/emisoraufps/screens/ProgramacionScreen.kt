@@ -61,101 +61,115 @@ fun ProgramacionScreen(navController: NavController) {
     val dias = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
     val programas = programasPorDia[diaSeleccionado] ?: emptyList()
 
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFFFDFDFD))
-            .padding(horizontal = 16.dp)
     ) {
-        Spacer(modifier = Modifier.height(16.dp))
 
-        // Título
-        Text(
-            text = "Programación",
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.align(Alignment.CenterHorizontally)
-        )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Fila de días desplazable horizontalmente
-        Row(
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                .background(Color(0xFFAA1916))
+                .padding(vertical = 16.dp)
         ) {
-            dias.forEach { dia ->
-                val isSelected = dia == diaSeleccionado
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = if (isSelected) Color(0xFF6B0000) else Color(0xFFFFC9C9),
-                    modifier = Modifier
-                        .clickable { diaSeleccionado = dia }
-                        .padding(vertical = 4.dp)
-                ) {
-                    Text(
-                        text = dia,
-                        color = if (isSelected) Color.White else Color.Black,
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                        fontSize = 14.sp
-                    )
-                }
-            }
+            Text(
+                text = "Programación",
+                fontSize = 22.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.Center)
+            )
         }
 
-        Spacer(modifier = Modifier.height(20.dp))
 
-        // Lista de programas
-        LazyColumn(
-            modifier = Modifier.fillMaxSize()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 16.dp)
         ) {
-            items(programas) { programa ->
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 6.dp)
-                        .clickable {
-                            navController.navigate(
-                                "detalle/${programa.nombre}/${programa.horario}"
-                            )
-                        },
-                    colors = CardDefaults.cardColors(
-                        containerColor = Color(0xFFF3EFFF)
-                    )
-                ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(12.dp)
+            Spacer(modifier = Modifier.height(16.dp))
+
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                dias.forEach { dia ->
+                    val isSelected = dia == diaSeleccionado
+                    Surface(
+                        shape = RoundedCornerShape(20.dp),
+                        color = if (isSelected) Color(0xFF6B0000) else Color(0xFFFFC9C9),
+                        modifier = Modifier
+                            .clickable { diaSeleccionado = dia }
+                            .padding(vertical = 4.dp)
                     ) {
-                        Box(
-                            modifier = Modifier
-                                .size(40.dp)
-                                .background(Color(0xFFE2D8FF), shape = CircleShape),
-                            contentAlignment = Alignment.Center
+                        Text(
+                            text = dia,
+                            color = if (isSelected) Color.White else Color.Black,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                            fontSize = 14.sp
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Lista de programas
+            LazyColumn(
+                modifier = Modifier.fillMaxSize()
+            ) {
+                items(programas) { programa ->
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 6.dp)
+                            .clickable {
+                                navController.navigate(
+                                    "detalle/${programa.nombre}/${programa.horario}"
+                                )
+                            },
+                        colors = CardDefaults.cardColors(
+                            containerColor = Color(0xFFF3EFFF)
+                        )
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(12.dp)
                         ) {
-                            Text(
-                                text = programa.nombre.first().toString(),
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFF6B0000)
-                            )
-                        }
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .background(Color(0xFFE2D8FF), shape = CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = programa.nombre.first().toString(),
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF6B0000)
+                                )
+                            }
 
-                        Spacer(modifier = Modifier.width(12.dp))
+                            Spacer(modifier = Modifier.width(12.dp))
 
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = programa.nombre,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 16.sp
-                            )
-                            Text(
-                                text = programa.horario,
-                                fontSize = 13.sp,
-                                color = Color.Gray
-                            )
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = programa.nombre,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 16.sp,
+                                    color = Color(0xFF6B0000)
+
+                                )
+                                Text(
+                                    text = programa.horario,
+                                    fontSize = 13.sp,
+                                    color = Color.Gray
+                                )
+                            }
                         }
                     }
                 }
