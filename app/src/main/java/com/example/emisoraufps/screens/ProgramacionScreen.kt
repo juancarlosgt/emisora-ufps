@@ -18,55 +18,61 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.compose.foundation.clickable
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
-// Modelo de datos
 data class Programa(
-    val nombre: String,
-    val horario: String
+    val nombre: String = "",
+    val horario: String = ""
 )
 
-// Datos de ejemplo
-private val programasPorDia = mapOf(
-    "Lunes" to listOf(
-        Programa("Artistas UFPS Radio", "12:00 AM - 5:00 AM"),
-        Programa("Sonidos Macondianos", "6:00 AM - 8:00 AM"),
-        Programa("Magazín Siente La U", "8:00 AM - 9:00 AM")
-    ),
-    "Martes" to listOf(
-        Programa("Cultura al Aire", "7:00 AM - 9:00 AM"),
-        Programa("Conexión Deportiva", "10:00 AM - 11:00 AM")
-    ),
-    "Miércoles" to listOf(
-        Programa("Noticias UFPS", "6:00 AM - 7:00 AM")
-    ),
-    "Jueves" to listOf(
-        Programa("Voces del Campus", "8:00 AM - 9:00 AM")
-    ),
-    "Viernes" to listOf(
-        Programa("Fin de Semana UFPS", "9:00 AM - 10:00 AM")
-    ),
-    "Sábado" to listOf(
-        Programa("Sábados Musicales", "10:00 AM - 12:00 PM")
-    ),
-    "Domingo" to listOf(
-        Programa("Domingos Culturales", "8:00 AM - 10:00 AM")
-    )
-)
+// Obtener los datos de Firebase
+// Opción 1: Usando callback
+// Opción 1: Usando callback
+fun obtenerProgramasDeFirebase(callback: (Map<String, List<Programa>>) -> Unit) {
+    val database: DatabaseReference = FirebaseDatabase.getInstance().getReference("programas")
+
+    database.get().addOnSuccessListener { snapshot ->
+        val programas = mutableMapOf<String, List<Programa>>()
+        snapshot.children.forEach { daySnapshot ->
+            val dia = daySnapshot.key ?: return@forEach
+            val listaProgramas = daySnapshot.children.mapNotNull {
+                it.getValue(Programa::class.java)
+            }
+            programas[dia] = listaProgramas
+        }
+        callback(programas)
+    }.addOnFailureListener {
+        // Manejar error
+        callback(emptyMap())
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProgramacionScreen(navController: NavController) {
     var diaSeleccionado by remember { mutableStateOf("Lunes") }
+    var programasPorDia by remember { mutableStateOf<Map<String, List<Programa>>>(emptyMap()) }
+    var isLoading by remember { mutableStateOf(true) }
 
     val dias = listOf("Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo")
     val programas = programasPorDia[diaSeleccionado] ?: emptyList()
 
+    // Cargar los datos de Firebase
+    LaunchedEffect(Unit) {
+        obtenerProgramasDeFirebase { programasObtenidos ->
+            programasPorDia = programasObtenidos
+            isLoading = false
+        }
+
+    }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
     ) {
-
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,7 +88,6 @@ fun ProgramacionScreen(navController: NavController) {
             )
         }
 
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -90,7 +95,7 @@ fun ProgramacionScreen(navController: NavController) {
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-
+            // Selector de días
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,57 +123,87 @@ fun ProgramacionScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Lista de programas
-            LazyColumn(
-                modifier = Modifier.fillMaxSize()
-            ) {
-                items(programas) { programa ->
-                    Card(
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 6.dp)
-                            .clickable {
-                                navController.navigate(
-                                    "detalle/${programa.nombre}/${programa.horario}"
-                                )
-                            },
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFF3EFFF)
-                        )
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(12.dp)
-                        ) {
+            if (isLoading) {
+                // Mostrar loading mientras se cargan los datos
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFF6B0000))
+                }
+            } else {
+                // Lista de programas
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    if (programas.isEmpty()) {
+                        item {
                             Box(
                                 modifier = Modifier
-                                    .size(40.dp)
-                                    .background(Color(0xFFE2D8FF), shape = CircleShape),
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
                                 contentAlignment = Alignment.Center
                             ) {
                                 Text(
-                                    text = programa.nombre.first().toString(),
-                                    fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF6B0000)
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(
-                                    text = programa.nombre,
-                                    fontWeight = FontWeight.SemiBold,
-                                    fontSize = 16.sp,
-                                    color = Color(0xFF6B0000)
-
-                                )
-                                Text(
-                                    text = programa.horario,
-                                    fontSize = 13.sp,
+                                    text = "No hay programas para este día",
                                     color = Color.Gray
                                 )
+                            }
+                        }
+                    } else {
+                        items(programas) { programa ->
+                            // Filtrar programas vacíos
+                            if (programa.nombre.isNotEmpty() && programa.horario.isNotEmpty()) {
+                                Card(
+                                    shape = RoundedCornerShape(16.dp),
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 6.dp)
+                                        .clickable {
+                                            navController.navigate(
+                                                "detalle/${programa.nombre}/${programa.horario}"
+                                            )
+                                        },
+                                    colors = CardDefaults.cardColors(
+                                        containerColor = Color(0xFFF3EFFF)
+                                    )
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(12.dp)
+                                    ) {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .background(Color(0xFFE2D8FF), shape = CircleShape),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = programa.nombre.first().toString(),
+                                                fontWeight = FontWeight.Bold,
+                                                color = Color(0xFF6B0000)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.width(12.dp))
+
+                                        Column(modifier = Modifier.weight(1f)) {
+                                            Text(
+                                                text = programa.nombre,
+                                                fontWeight = FontWeight.SemiBold,
+                                                fontSize = 16.sp,
+                                                color = Color(0xFF6B0000)
+                                            )
+                                            Text(
+                                                text = programa.horario,
+                                                fontSize = 13.sp,
+                                                color = Color.Gray
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
