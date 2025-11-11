@@ -20,27 +20,68 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 
 // Modelo de datos para comunicadores
 data class Comunicador(
-    val nombre: String,
-    val programa: String,
-    val inicial: String,
+    val nombre: String = "",
+    val programa: String = "",
+    val inicial: String = "",
+    val biografia: String = "",
+    val rol: String = "",
     val color: Color = Color(0xFF8B7ABA)
 )
 
 // Datos de ejemplo
-private val comunicadoresList = listOf(
-    Comunicador("Ing Matias", "bailando sin cesar", "A"),
-    Comunicador("Ing Adarme", "Data Structures", "A"),
-    Comunicador("Ing Pilar Rojas", "Apilando canciones", "A"),
-    Comunicador("Diany", "canciones de los 80", "A")
-)
+// private val comunicadoresList = listOf(
+//     Comunicador("Ing Matias", "bailando sin cesar", "A", "Biografia de Ing Matias", "Rol de Ing Matias"),
+//     Comunicador("Ing Adarme", "Data Structures", "A", "Biografia de Ing Adarme", "Rol de Ing Adarme"),
+//     Comunicador("Ing Pilar Rojas", "Apilando canciones", "A", "Biografia de Ing Pilar Rojas", "Rol de Ing Pilar Rojas"),
+//     Comunicador("Diany", "canciones de los 80", "A", "Biografia de Diany", "Rol de Diany")
+// )
+
+fun obtenerComunicadoresDeFirebase(callback: (List<Comunicador>) -> Unit) {
+    val database: DatabaseReference = FirebaseDatabase.getInstance().getReference("comunicadores")
+
+    database.get().addOnSuccessListener { snapshot ->
+        val comunicadores = snapshot.children.mapNotNull { dataSnapshot ->
+            val nombre = dataSnapshot.child("nombre").getValue(String::class.java) ?: ""
+            val biografia = dataSnapshot.child("biografia").getValue(String::class.java) ?: ""
+            val rol = dataSnapshot.child("rol").getValue(String::class.java) ?: ""
+            val inicial = nombre.firstOrNull()?.uppercase() ?: "A"
+
+            if (nombre.isNotEmpty()) {
+                Comunicador(
+                    nombre = nombre,
+                    programa = biografia,
+                    inicial = inicial,
+                    biografia = biografia,
+                    rol = rol
+                )
+            } else {
+                null
+            }
+        }
+        callback(comunicadores)
+    }.addOnFailureListener {
+        // Manejar error
+        callback(emptyList())
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComunicadoresScreen(navController: NavController) {
-    var comunicadorSeleccionado by remember { mutableStateOf(0) }
+    var comunicadores by remember { mutableStateOf<List<Comunicador>>(emptyList()) }
+    var isLoading by remember { mutableStateOf(true) }
+
+    LaunchedEffect(Unit) {
+        obtenerComunicadoresDeFirebase { comunicadoresObtenidos ->
+            comunicadores = comunicadoresObtenidos
+            isLoading = false
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -121,16 +162,43 @@ fun ComunicadoresScreen(navController: NavController) {
                     .padding(top = 24.dp, bottom = 16.dp)
             )
 
-            // Lista de comunicadores
-            LazyColumn(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-                    .padding(horizontal = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                items(comunicadoresList) { comunicador ->
-                    ComunicadorCard(comunicador, navController)
+            if (isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .weight(1f),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(color = Color(0xFFD32F2F))
+                }
+            } else {
+                // Lista de comunicadores
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .padding(horizontal = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    if (comunicadores.isEmpty()) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(32.dp),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = "No hay comunicadores disponibles",
+                                    color = Color.Gray
+                                )
+                            }
+                        }
+                    } else {
+                        items(comunicadores) { comunicador ->
+                            ComunicadorCard(comunicador, navController)
+                        }
+                    }
                 }
             }
 
@@ -228,12 +296,14 @@ fun ComunicadorCard(comunicador: Comunicador, navController: NavController) {
                         fontWeight = FontWeight.SemiBold
                     )
                 )
-                Text(
-                    comunicador.programa,
-                    style = MaterialTheme.typography.bodySmall.copy(
-                        color = Color.Gray
-                    )
-                )
+
+            }
+
+            // Iconos de acción (simplificados con símbolos)
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(end = 8.dp)
+            ) {
             }
         }
     }
