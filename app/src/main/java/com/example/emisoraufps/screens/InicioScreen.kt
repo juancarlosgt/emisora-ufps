@@ -22,34 +22,19 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.emisoraufps.R
 import com.google.android.exoplayer2.ExoPlayer
 import com.google.android.exoplayer2.MediaItem
-
+import com.example.emisoraufps.PlayerViewModel
 @Composable
-fun InicioScreen() {
-
-    var isPlaying by remember { mutableStateOf(false) }
-
-    // Crear el ExoPlayer
+fun InicioScreen(viewModel: PlayerViewModel = viewModel()) {
     val context = LocalContext.current
-    val player = remember {
-        ExoPlayer.Builder(context).build().apply {
-            val mediaItem = MediaItem.fromUri("https://apps.ufps.edu.co/emisoraufps")
-            setMediaItem(mediaItem)
-            prepare()
-        }
-    }
 
-    // Cuando isPlaying cambie, pausamos o comenzamos el stream
-    LaunchedEffect(isPlaying) {
-        if (isPlaying) {
-            player.play() // Reproducir el stream
-        } else {
-            player.pause() // Detener el stream
-        }
+    // Solo nos aseguramos de que el player esté inicializado
+    LaunchedEffect(Unit) {
+        viewModel.initializePlayer(context)
     }
-
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -58,7 +43,7 @@ fun InicioScreen() {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(Color(0xFFAA1916)) 
+                .background(Color(0xFFAA1916))
                 .padding(10.dp)
         ) {
             Image(
@@ -68,38 +53,6 @@ fun InicioScreen() {
                     .height(140.dp)
                     .align(Alignment.CenterStart)
             )
-        }
-        Card(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(10.dp)
-        ) {
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    painter = if (isPlaying) painterResource(id = R.drawable.pause_button) else painterResource(id = R.drawable.play_button),
-                    contentDescription = "Play Button",
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clickable {
-                            isPlaying = !isPlaying
-                        },
-                    tint = Color.Unspecified
-
-                )   
-            }
-        }
-
-    }
-
-    DisposableEffect(context) {
-        onDispose {
-            player.release()
         }
     }
 }

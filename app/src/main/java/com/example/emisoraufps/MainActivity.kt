@@ -3,6 +3,7 @@ package com.example.emisoraufps
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -20,8 +21,10 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -31,8 +34,8 @@ import androidx.navigation.compose.rememberNavController
 import com.example.emisoraufps.screens.*
 import com.example.emisoraufps.ui.theme.EmisoraUFPSTheme
 import com.example.emisoraufps.screens.DetalleProgramaScreen
-
-
+import com.example.emisoraufps.screens.PersistentMiniPlayer
+import com.example.emisoraufps.PlayerViewModel
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,7 +72,20 @@ fun MainScreen() {
     Scaffold(
         bottomBar = { BottomNavigationBar(navController) }
     ) { innerPadding ->
-        NavigationHost(navController, Modifier.padding(innerPadding))
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding) // Añadir el innerPadding si es necesario
+        ) {
+            NavigationHost(navController, Modifier.padding(innerPadding))
+            val playerViewModel: PlayerViewModel = viewModel()
+            PersistentMiniPlayer(
+                viewModel = playerViewModel,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+            )
+        }
+
     }
 }
 
@@ -105,6 +121,7 @@ fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifi
             val nombre = backStackEntry.arguments?.getString("nombre") ?: ""
             DetalleComunicadorScreen(navController, nombre)
         }
+
     }
 }
 
