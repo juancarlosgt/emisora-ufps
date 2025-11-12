@@ -88,59 +88,16 @@ fun ComunicadoresScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp)
-                    .background(Color(0xFFD32F2F)),
-                contentAlignment = Alignment.Center
+                    .background(Color(0xFFAA1916))
+                    .padding(vertical = 16.dp)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Logo UFPS (simplificado)
-                    Column {
-                        Text(
-                            "95.2",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            ),
-                            fontSize = 10.sp
-                        )
-                        Text(
-                            "UFPS",
-                            style = MaterialTheme.typography.titleSmall.copy(
-                                fontWeight = FontWeight.Bold,
-                                color = Color.White
-                            )
-                        )
-                        Text(
-                            "Radio",
-                            style = MaterialTheme.typography.labelSmall.copy(
-                                color = Color.White
-                            ),
-                            fontSize = 10.sp
-                        )
-                    }
-
-                    // Play button
-                    Box(
-                        modifier = Modifier
-                            .size(44.dp)
-                            .clip(CircleShape)
-                            .background(Color.White),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            "▶",
-                            color = Color(0xFFD32F2F),
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
+                Text(
+                    text = "Comunicadores",
+                    fontSize = 22.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.White,
+                    modifier = Modifier.align(Alignment.Center)
+                )
             }
         }
     ) { innerPadding ->
@@ -148,19 +105,8 @@ fun ComunicadoresScreen(navController: NavController) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(Color.White)
+                .padding(vertical = 16.dp)
         ) {
-            // Título
-            Text(
-                "Comunicadores",
-                style = MaterialTheme.typography.headlineSmall.copy(
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 24.sp
-                ),
-                modifier = Modifier
-                    .align(Alignment.CenterHorizontally)
-                    .padding(top = 24.dp, bottom = 16.dp)
-            )
 
             if (isLoading) {
                 Box(
@@ -294,7 +240,8 @@ fun ComunicadorCard(comunicador: Comunicador, navController: NavController) {
                     comunicador.nombre,
                     style = MaterialTheme.typography.bodyLarge.copy(
                         fontWeight = FontWeight.SemiBold
-                    )
+                    ),
+                    color = Color.Black,
                 )
 
             }
