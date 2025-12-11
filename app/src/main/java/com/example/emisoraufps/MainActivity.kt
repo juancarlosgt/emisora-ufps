@@ -97,7 +97,7 @@ fun NavigationHost(navController: NavHostController, modifier: Modifier = Modifi
         modifier = modifier
     ) {
         composable(Screen.Inicio.route) {
-            InicioScreen()
+            InicioScreen(navController)
         }
         composable(Screen.Programacion.route) {
             ProgramacionScreen(navController)
